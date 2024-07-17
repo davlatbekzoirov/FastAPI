@@ -1,42 +1,47 @@
-from fastapi import APIRouter, status
-from scehmas import SignUPModel
-from database import session, engine
+from fastapi import APIRouter, status, Depends
+from sqlalchemy.orm import Session
+from scehmas import SignUPModel, LoginModel
+from database import get_db
 from models import User
 from fastapi.exceptions import HTTPException
 from werkzeug.security import generate_password_hash, check_password_hash
+from fastapi_jwt_auth import AuthJWT # JWT asosidagi autentifikatsiya uchun ishlatiladi.
+from fastapi.encoders import jsonable_encoder # Ma'lumotlarni JSON formatiga o'girish uchun ishlatiladi.
 
 auth_router = APIRouter(
     prefix='/auth'
 )
 
-session = session(bind = engine)
-
-@auth_router.post('/')
-async def signup():
-    return {'message': 'Sign up'}
-
 @auth_router.post('/signup', status_code=status.HTTP_201_CREATED)
-async def signup(user: SignUPModel):
-    db_email = session.query(User).filter(User.email == User.email).first()
+async def signup(user: SignUPModel, db: Session = Depends(get_db)):
+    db_email = db.query(User).filter(User.email == user.email).first() # Foydalanuvchini email bo'yicha tekshiramiz
     if db_email is not None:
-        return HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                             detail='User with this email already exists')
+        # Agar email mavjud bo'lsa, HTTP 400 xatolikni tashlaymiz
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='User with this email already exists')
     
-    db_username = session.query(User).filter(User.username == User.username).first()
+    # Foydalanuvchini username bo'yicha tekshiramiz
+    db_username = db.query(User).filter(User.username == user.username).first()
     if db_username is not None:
-        return HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                             detail='User with this username already exists')
+        # Agar username mavjud bo'lsa, HTTP 400 xatolikni tashlaymiz
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail='User with this username already exists')
     
+    # Yangi foydalanuvchi obyektini yaratamiz
     new_user = User(
-        user = user.username,
-        email = user.email,
-        password = generate_password_hash(user.password),
-        is_active = user.is_active,
-        is_staff = user.is_staff
+        username=user.username,
+        email=user.email,
+        password=generate_password_hash(user.password), # Parolni hash qilamiz
+        is_active=user.is_active,
+        is_staff=user.is_staff
     )
 
-    session.add(new_user)
-    session.commit()
+    # Yangi foydalanuvchini ma'lumotlar bazasiga qo'shamiz
+    db.add(new_user)
+    # Ma'lumotlar bazasiga o'zgartirishlarni saqlaymiz
+    db.commit()
+    # Yangi foydalanuvchini yangilaymiz
+    db.refresh(new_user)
     data = {
         'id': new_user.id,
         'username': new_user.username,
@@ -52,3 +57,31 @@ async def signup(user: SignUPModel):
         'data': data
     }
     return response_model
+
+
+@auth_router.post('/login', status_code=200)
+def login(user: LoginModel, db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+    # Foydalanuvchini username bo'yicha tekshiramiz
+    db_user = db.query(User).filter(User.username == user.username).first()
+    # Agar foydalanuvchi mavjud bo'lsa va parol to'g'ri bo'lsa
+    if db_user and check_password_hash(db_user.password, user.password):
+        # Access va refresh tokenlarni yaratamiz
+        access_token = Authorize.create_access_token(subject=db_user.username)
+        refresh_token = Authorize.create_refresh_token(subject=db_user.username)
+
+        token = {
+            'access': access_token,
+            'refresh': refresh_token
+        }
+        response = {
+            'success': True,
+            'code': 200,
+            'message': 'User successfully logged in',
+            'data': token
+        }
+
+        # Javobni JSON formatiga o'giramiz va qaytaramiz
+        return jsonable_encoder(response)
+    
+    # Agar username yoki parol noto'g'ri bo'lsa, HTTP 400 xatolikni tashlaymiz
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username or password")

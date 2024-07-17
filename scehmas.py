@@ -24,3 +24,11 @@ class SignUPModel(BaseModel):
             }
         }
         # Modelning misolini (example) kiritish imkonini beradi. Bu misol JSON schema yaratishda yordam beradi va hujjatlashtirishda ko'rsatiladi.
+class LoginModel(BaseModel):
+    username: str
+    password: str
+
+class Settings(BaseModel):
+    authjwt_secret_key: str = '431be874dc78c73d440d0706f26fa32b8a37bcd9250930492925c2334cd53a90'
+# import secrets
+# secrets.token_hex()
