@@ -7,10 +7,22 @@ from fastapi.exceptions import HTTPException
 from werkzeug.security import generate_password_hash, check_password_hash
 from fastapi_jwt_auth import AuthJWT # JWT asosidagi autentifikatsiya uchun ishlatiladi.
 from fastapi.encoders import jsonable_encoder # Ma'lumotlarni JSON formatiga o'girish uchun ishlatiladi.
+from sqlalchemy import or_
+
 
 auth_router = APIRouter(
     prefix='/auth'
 )
+
+# POSTMAN -> HEADERS -> add Authorization, Bearer `token` - beriladi 
+# ELATMA!!!!!!!! `` - olib tashlanadi tokenni o'zi beriladi
+@auth_router.get('/')
+async def sugnu_main(Authorize: AuthJWT = Depends()):
+    try:
+        Authorize.jwt_required()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Token")
+    return {'message': 'Bu asosiy auth route'}
 
 @auth_router.post('/signup', status_code=status.HTTP_201_CREATED)
 async def signup(user: SignUPModel, db: Session = Depends(get_db)):
@@ -62,7 +74,15 @@ async def signup(user: SignUPModel, db: Session = Depends(get_db)):
 @auth_router.post('/login', status_code=200)
 def login(user: LoginModel, db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
     # Foydalanuvchini username bo'yicha tekshiramiz
-    db_user = db.query(User).filter(User.username == user.username).first()
+    # db_user = db.query(User).filter(User.username == user.username).first()
+    
+    # so'rovda email yoki username kiritilganini tekshiramiz
+    db_user = db.query(User).filter(
+        or_(
+            User.username == user.username_or_email,
+            User.email == user.username_or_email
+        )
+    ).first()
     # Agar foydalanuvchi mavjud bo'lsa va parol to'g'ri bo'lsa
     if db_user and check_password_hash(db_user.password, user.password):
         # Access va refresh tokenlarni yaratamiz
@@ -75,7 +95,7 @@ def login(user: LoginModel, db: Session = Depends(get_db), Authorize: AuthJWT = 
         }
         response = {
             'success': True,
-            'code': 200,
+            'code': 201,
             'message': 'User successfully logged in',
             'data': token
         }

@@ -24,8 +24,9 @@ class SignUPModel(BaseModel):
             }
         }
         # Modelning misolini (example) kiritish imkonini beradi. Bu misol JSON schema yaratishda yordam beradi va hujjatlashtirishda ko'rsatiladi.
+
 class LoginModel(BaseModel):
-    username: str
+    username_or_email: str
     password: str
 
 class Settings(BaseModel):
