@@ -1,4 +1,4 @@
-from database import Base
+from database.database import Base
 from sqlalchemy import Column, Integer, Boolean, Text, String, ForeignKey
 # * Column - Ma'lumotlar bazasi jadvallarida ustunlar yaratish uchun ishlatiladi. Har bir ustun jadvaldagi ma'lumotlarning turini va xususiyatlarini belgilaydi.
 # * Integer - Column obyektlari uchun integer (butun son) tipini belgilaydi
