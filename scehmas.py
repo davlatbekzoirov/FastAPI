@@ -1,5 +1,8 @@
 from pydantic import BaseModel
+# ! pydantic BaseModel sinfi orqali ma'lumot modellari yaratishga yordam beradi. Bu modellar yordamida kelayotgan yoki jo'natilayotgan ma'lumotlarni tekshirish va validatsiya qilish mumkin.
 from typing import Optional
+# ? typing kutubxonasi Python kodida tip annotatsiyalarini ishlatish imkonini beradi. Bu kodni yanada tushunarli va o'qiladigan qiladi.
+# ? Optional turli tip annotatsiyalarni yaratishda qo'llaniladi va maydonning qiymati None bo'lishi mumkinligini bildiradi.
 
 class SignUPModel(BaseModel):
     id: Optional[int]

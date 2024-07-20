@@ -17,10 +17,13 @@ auth_router = APIRouter(
 # POSTMAN -> HEADERS -> add Authorization, Bearer `token` - beriladi 
 # ELATMA!!!!!!!! `` - olib tashlanadi tokenni o'zi beriladi
 @auth_router.get('/')
-async def sugnu_main(Authorize: AuthJWT = Depends()):
+# ! Authorize argumenti AuthJWT turidagi obyektni o'z ichiga oladi va Depends() yordamida avtomatik ravishda bog'lanadi. Depends() funksiyasi FastAPI ga bu argument uchun qanday qiymatni olish kerakligini bildiradi.
+async def sugnup_main(Authorize: AuthJWT = Depends()):
     try:
+        # * Agar token haqiqiy bo'lsa, funksiya davom etadi. Authorize.jwt_required() metodi JWT tokenining mavjudligini va uning yaroqliligini tekshiradi.
         Authorize.jwt_required()
     except Exception as e:
+        # ? Agar JWT tekshiruvi muvaffaqiyatsiz bo'lsa yoki istisno yuz bersa, except bloki ishga tushadi va HTTPException chiqariladi. Bu HTTP 401 status kodi va "Invalid Token" detallari bilan javob qaytaradi, bu esa foydalanuvchini autentifikatsiya qilinmaganligini bildiradi.
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Token")
     return {'message': 'Bu asosiy auth route'}
 
@@ -28,7 +31,7 @@ async def sugnu_main(Authorize: AuthJWT = Depends()):
 async def signup(user: SignUPModel, db: Session = Depends(get_db)):
     db_email = db.query(User).filter(User.email == user.email).first() # Foydalanuvchini email bo'yicha tekshiramiz
     if db_email is not None:
-        # Agar email mavjud bo'lsa, HTTP 400 xatolikni tashlaymiz
+        # ! Agar email mavjud bo'lsa, HTTP 400 xatolikni tashlaymiz
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail='User with this email already exists')
     
