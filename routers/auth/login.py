@@ -28,7 +28,7 @@ def login(user: LoginModel, db: Session = Depends(get_db), Authorize: AuthJWT = 
     ).first()
     # ! Agar foydalanuvchi mavjud bo'lsa va parol to'g'ri bo'lsa
     if db_user and check_password_hash(db_user.password, user.password):
-        access_lifetime = datetime.timedelta(minutes=1)
+        access_lifetime = datetime.timedelta(minutes=60)
         refresh_lifetime = datetime.timedelta(days=3)
 
         # ! Access va refresh tokenlarni yaratamiz

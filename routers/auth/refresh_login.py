@@ -14,7 +14,7 @@ auth_router = APIRouter(
 @auth_router.get('/login/refresh')
 async def refresh_token(Authorize: AuthJWT = Depends(), db: Session = Depends(get_db)):
     try:
-        access_lifetime = datetime.timedelta(minutes=1)
+        access_lifetime = datetime.timedelta(minutes=60)
         refresh_lifetime = datetime.timedelta(days=3)
 
         Authorize.jwt_refresh_token_required()  # ? majburiy access token
