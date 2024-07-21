@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from routers.auth import auth, login, refresh_login, signup
 from routers.order import order, make_order, list_order, id_order
+from routers.product import create_product, list_product, id_product
 from fastapi_jwt_auth import AuthJWT
 # ! Bu qatorda fastapi_jwt_auth modulidan AuthJWT import qilinadi. Bu modul JWT (JSON Web Token) yordamida autentifikatsiya qilish uchun ishlatiladi.
 from data.scehmas import LoginModel, Settings
@@ -28,6 +29,10 @@ app.include_router(order.order_router)
 app.include_router(make_order.order_router)
 app.include_router(list_order.order_router)
 app.include_router(id_order.order_router)
+# ! Bu qatorda order_router FastAPI ilovasiga qo'shiladi. Bu order_router da belgilangan barcha yo'laklarni ilovaga qo'shadi.
+app.include_router(create_product.product_router)
+app.include_router(list_product.product_router)
+app.include_router(id_product.product_router)
 # ! Bu qatorda order_router FastAPI ilovasiga qo'shiladi. Bu order_router da belgilangan barcha yo'laklarni ilovaga qo'shadi.
 app.add_middleware(
     CORSMiddleware,

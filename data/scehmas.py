@@ -65,3 +65,18 @@ class OrderStatusModel(BaseModel):
             }
         }
         # ! Modelning misolini (example) kiritish imkonini beradi. Bu misol JSON schema yaratishda yordam beradi va hujjatlashtirishda ko'rsatiladi.
+
+class ProductModel(BaseModel):
+    id: Optional[int]
+    name: str
+    price: int
+    class Config: #  ? Pydantic modeliga maxsus konfiguratsiyalar berish uchun ishlatiladi.
+        orm_mode = True
+        # ! Bu parametr Pydantic modelining ORM (Object-Relational Mapping) rejimida ishlashiga imkon beradi, ya'ni Pydantic modeli ORM ma'lumotlari bilan ishlash uchun mos bo'ladi.
+        schema_extra = {
+            'example': {
+                'name': "Uzbek Plov",
+                'price': 30000
+            }
+        }
+        # ! Modelning misolini (example) kiritish imkonini beradi. Bu misol JSON schema yaratishda yordam beradi va hujjatlashtirishda ko'rsatiladi.

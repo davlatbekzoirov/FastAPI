@@ -1,45 +1,37 @@
-from fastapi_jwt_auth import AuthJWT # JWT asosidagi autentifikatsiya uchun ishlatiladi.
-from models.models import User, Order
+from fastapi_jwt_auth import AuthJWT # ! JWT asosidagi autentifikatsiya uchun ishlatiladi.
+from models.models import User, Product
 from database.database import get_db
 from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from fastapi.encoders import jsonable_encoder # ! Ma'lumotlarni JSON formatiga o'girish uchun ishlatiladi.
+from data.scehmas import ProductModel
 
-
-order_router = APIRouter(
-    prefix="/order"
+product_router = APIRouter(
+    prefix="/product"
 )
 
-@order_router.get('/list')
-async def list_all_orders(Authorize: AuthJWT = Depends(), db: Session = Depends(get_db)):
-    # ! Bu barcha buyurtmalar ro'yxatini qaytaradi
+@product_router.get('/list', status_code=status.HTTP_201_CREATED)
+async def list_all_product(Authorize: AuthJWT = Depends(), db: Session = Depends(get_db)):
     try:
         Authorize.jwt_required()
     except HTTPException as e:
         raise e
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Enter valid access token")
-    
+
     current_user = Authorize.get_jwt_subject()
 
     user = db.query(User).filter(User.username == current_user).first()
-
     if user.is_staff:
-        orders = db.query(Order).all()
+        products = db.query(Product).all()
         custom_data = [
             {
-                'id': order.id,
-                'user_id': {
-                    'id': order.user.id,
-                    'username': order.user.username,
-                    'email': order.user.email
-                },
-                'product_id': order.product_id,
-                'quantity': order.quantity,
-                'order_status': order.ordered_statuses.value
+                'id': product.id,
+                'name': product.name,
+                'price': product.price 
             }
-            for order in orders
+            for product in products
         ]
         return jsonable_encoder(custom_data)
     else:
