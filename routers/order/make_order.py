@@ -25,6 +25,7 @@ async def make_order(order: OrderModel, Authorize: AuthJWT = Depends(), db: Sess
 
     new_order = Order(
         quantity = order.quantity,
+        product_id = order.product_id
     )
 
     new_order.user = user
@@ -37,8 +38,14 @@ async def make_order(order: OrderModel, Authorize: AuthJWT = Depends(), db: Sess
         'message':'Order is created successfully',
         'data': {
             'id': new_order.id,
+            'product_id': {
+                'id': new_order.product.id,
+                'name': new_order.product.name,
+                'price': new_order.product.price
+            },
             'quantity': new_order.quantity,
-            'order_status': new_order.ordered_statuses,
+            'order_status': new_order.ordered_statuses.value,
+            'total_price': new_order.quantity * new_order.product.price
         }
     }
     return data

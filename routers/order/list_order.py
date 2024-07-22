@@ -35,9 +35,14 @@ async def list_all_orders(Authorize: AuthJWT = Depends(), db: Session = Depends(
                     'username': order.user.username,
                     'email': order.user.email
                 },
-                'product_id': order.product_id,
+                'product_id': {
+                    'id': order.product.id,
+                    'name': order.product.name,
+                    'price': order.product.price
+                },
                 'quantity': order.quantity,
-                'order_status': order.ordered_statuses.value
+                'order_status': order.ordered_statuses.value,
+                'total_price': order.quantity * order.product.price
             }
             for order in orders
         ]

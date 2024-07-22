@@ -42,7 +42,7 @@ class OrderModel(BaseModel):
     quantity: int
     order_status: Optional[str] = "PENDING"
     user: Optional[int]
-    product_id: Optional[int]
+    product_id: int
 
     class Config: #  ? Pydantic modeliga maxsus konfiguratsiyalar berish uchun ishlatiladi.
         orm_mode = True

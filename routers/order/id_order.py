@@ -35,9 +35,15 @@ async def list_all_orders(id: int, Authorize: AuthJWT = Depends(), db: Session =
                         'username': order.user.username,
                         'email': order.user.email
                     },
+                    'product_id': {
+                        'id': order.product.id,
+                        'name': order.product.name,
+                        'price': order.product.price
+                    },
                     'product_id': order.product_id,
                     'quantity': order.quantity,
-                    'order_status': order.ordered_statuses.value
+                    'order_status': order.ordered_statuses.value,
+                    'total_price': order.quantity * order.product.price
                 }
             ]
             return jsonable_encoder(custom_data)
