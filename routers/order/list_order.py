@@ -11,7 +11,7 @@ order_router = APIRouter(
     prefix="/order"
 )
 
-@order_router.get('/list')
+@order_router.get('/list', status_code=status.HTTP_200_OK)
 async def list_all_orders(Authorize: AuthJWT = Depends(), db: Session = Depends(get_db)):
     # ! Bu barcha buyurtmalar ro'yxatini qaytaradi
     try:
